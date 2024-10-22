@@ -1,6 +1,7 @@
-version: '3'
 services:
   postgres:
+    container_name: criti-pixel-postgres
+    hostname : criti-pixel-postgres
     image: postgres:16-alpine
     ports:
       - 5432:5432
@@ -9,6 +10,13 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
+    networks:
+      lde-network:
+    
+networks:
+  lde-network:
+    external: true
+    
 volumes:
   postgres_db:
     driver: local
