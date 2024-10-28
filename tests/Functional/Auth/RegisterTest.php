@@ -15,30 +15,29 @@ final class RegisterTest extends FunctionalTestCase
         $this->get('/auth/register');
 
         $this->client->submitForm('S\'inscrire', self::getFormData());
-
         self::assertResponseRedirects('/auth/login');
 
-        // $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user@email.com');
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user@email.com');
 
-        // $userPasswordHasher = $this->service(UserPasswordHasherInterface::class);
+        $userPasswordHasher = $this->service(UserPasswordHasherInterface::class);
 
-        // self::assertNotNull($user);
-        // self::assertSame('username', $user->getUsername());
-        // self::assertSame('user@email.com', $user->getEmail());
-        // self::assertTrue($userPasswordHasher->isPasswordValid($user, 'SuperPassword123!'));
+        self::assertNotNull($user);
+        self::assertSame('username', $user->getUsername());
+        self::assertSame('user@email.com', $user->getEmail());
+        self::assertTrue($userPasswordHasher->isPasswordValid($user, 'SuperPassword123!'));
     }
 
     /**
      * @dataProvider provideInvalidFormData
      */
-    // public function testThatRegistrationShouldFailed(array $formData): void
-    // {
-    //     $this->get('/auth/register');
+    public function testThatRegistrationShouldFailed(array $formData): void
+    {
+        $this->get('/auth/register');
 
-    //     $this->client->submitForm('S\'inscrire', $formData);
+        $this->client->submitForm('S\'inscrire', $formData);
 
-    //     self::assertResponseIsUnprocessable();
-    // }
+        self::assertResponseIsUnprocessable();
+    }
 
     public static function provideInvalidFormData(): iterable
     {
@@ -52,10 +51,11 @@ final class RegisterTest extends FunctionalTestCase
 
     public static function getFormData(array $overrideData = []): array
     {
-        return [
-            'register[username]' => 'username',
-            'register[email]' => 'user@email.com',
+        return array_merge([
+            'register[username]' => uniqid() .'username',
+            'register[email]' => uniqid() . 'user@email.com',
             'register[plainPassword]' => 'SuperPassword123!'
-        ] + $overrideData;
+        ] , $overrideData);
     }
 }
+

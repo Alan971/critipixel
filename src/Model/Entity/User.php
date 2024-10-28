@@ -29,7 +29,7 @@ use Symfony\Component\Validator\Constraints\PasswordStrength;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[Id]
-    #[GeneratedValue]
+    #[GeneratedValue(strategy: 'AUTO')]
     #[Column]
     private ?int $id = null;
 
