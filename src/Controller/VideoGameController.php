@@ -40,6 +40,7 @@ final class VideoGameController extends AbstractController
         $form = $this->createForm(ReviewType::class, $review)->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            echo "\n" .  'Dans le controleur -> user : ' . $this->getUser() . "\n" . 'vidéo : ' . $videoGame->getSlug() ."\n";
             $this->denyAccessUnlessGranted('review', $videoGame);
             $review->setVideoGame($videoGame);
             $review->setUser($this->getUser());
@@ -47,7 +48,6 @@ final class VideoGameController extends AbstractController
             $entityManager->flush();
             return $this->redirectToRoute('video_games_show', ['slug' => $videoGame->getSlug()]);
         }
-
         return $this->render('views/video_games/show.html.twig', ['video_game' => $videoGame, 'form' => $form]);
     }
 }
