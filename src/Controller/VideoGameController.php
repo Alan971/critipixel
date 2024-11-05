@@ -40,7 +40,6 @@ final class VideoGameController extends AbstractController
         $form = $this->createForm(ReviewType::class, $review)->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            echo "\n" .  'Dans le controleur -> user : ' . $this->getUser() . "\n" . 'vidéo : ' . $videoGame->getSlug() ."\n";
             $this->denyAccessUnlessGranted('review', $videoGame);
             $review->setVideoGame($videoGame);
             $review->setUser($this->getUser());
