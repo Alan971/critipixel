@@ -15,19 +15,6 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class AddNoteTest extends FunctionalTestCase
 {
-
-    /**
-     * Voir un jeu vidéo
-     *
-     * @return void
-     */
-    // public function testShouldShowVideoGame(): void
-    // {
-    //     $this->client->request('GET', '/jeu-video-0');
-    //     self::assertResponseIsSuccessful();
-    //     self::assertSelectorTextContains('h1', 'Jeu vidéo 0');
-    // }
-
     /**
      * ajout d'une note qui fonctionne
      *
@@ -130,37 +117,37 @@ final class AddNoteTest extends FunctionalTestCase
      * pour les tests sur le commentaires, on s'attend que le test soit passé avant le submit du formulaire
      * même s'il est vide ou trop long car il n'y a pas de limite de taille au commentaire
      */
-    // public function testAddNoteShouldFailed(array $formData): void
-    // {
-    //     // Remplacer le voter dans le conteneur de services
-    //     $this->getContainer()->set(VideoGameVoter::class, new VideoGameVoterTest());
+    public function testAddNoteShouldFailed(array $formData): void
+    {
+        // Remplacer le voter dans le conteneur de services
+        $this->getContainer()->set(VideoGameVoter::class, new VideoGameVoterTest());
 
-    //     // // connection d'un utilisateur
-    //     $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user+7@email.com');
-    //     $this->client->loginUser($user,'password');
-    //     // self::assertTrue($this->client->getContainer()->get('security.token_storage')->getToken() !== null);
+        // // connection d'un utilisateur
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user+7@email.com');
+        $this->client->loginUser($user,'password');
+        // self::assertTrue($this->client->getContainer()->get('security.token_storage')->getToken() !== null);
         
-    //     // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
-    //     $videoGame = $this->videoGameChoice($user);
-    //     $slug = $videoGame->getSlug();
-    //     if ($slug) {
-    //         echo "\n" .  'Dans le test ' . $slug . ' , avant-> user : ' . $user->getUsername() . "\n" ;
-    //         //$this->get('/' . $slug );
-    //         $this->client->request('GET', '/' . $slug);
-    //     }
-    //     else {
-    //         throw new \Exception('No slug found, change user in the test code');
-    //     }
-    //     // ajout de note de l'utilisateur
-    //     $this->client->submitForm('Poster', $formData);
-    //     // choix du type de contrôles
-    //     if ($formData['review[rating]'] <= 5 && $formData['review[rating]'] > 0) {
-    //         self::assertResponseStatusCodeSame(Response::HTTP_FOUND);
-    //     }
-    //     else {
-    //         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
-    //     }
-    // }
+        // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
+        $videoGame = $this->videoGameChoice($user);
+        $slug = $videoGame->getSlug();
+        if ($slug) {
+            echo "\n" .  'Dans le test ' . $slug . ' , avant-> user : ' . $user->getUsername() . "\n" ;
+            //$this->get('/' . $slug );
+            $this->client->request('GET', '/' . $slug);
+        }
+        else {
+            throw new \Exception('No slug found, change user in the test code');
+        }
+        // ajout de note de l'utilisateur
+        $this->client->submitForm('Poster', $formData);
+        // choix du type de contrôles
+        if ($formData['review[rating]'] <= 5 && $formData['review[rating]'] > 0) {
+            self::assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        }
+        else {
+            self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        }
+    }
 
     public static function provideInvalidFormData(): iterable
     {
