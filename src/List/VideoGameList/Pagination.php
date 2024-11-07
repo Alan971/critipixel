@@ -67,7 +67,7 @@ final class Pagination implements IteratorAggregate, Countable
     }
 
     /**
-     * @return Traversable<string, int>
+     * @return Traversable<mixed, Page>
      */
     public function getIterator(): Traversable
     {

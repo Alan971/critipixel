@@ -24,6 +24,8 @@ class Tag
 
     #[Column(unique: true)]
     #[Slug(fields: ['name'])]
+    //Setter inutile car généré automatiquement, je demande à phpstan d'ignorer l'erreur
+    // @phpstan-ignore-next-line
     private string $code;
 
     #[NotBlank]
@@ -40,6 +42,7 @@ class Tag
     {
         return $this->code;
     }
+
 
     public function getName(): string
     {

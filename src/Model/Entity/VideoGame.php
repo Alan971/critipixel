@@ -52,6 +52,8 @@ class VideoGame
 
     #[Column(unique: true)]
     #[Slug(fields: ['title'])]
+    //Setter inutile, je demande à phpstan d'ignorer l'erreur
+    // @phpstan-ignore-next-line
     private string $slug;
 
     #[NotBlank]
@@ -62,6 +64,8 @@ class VideoGame
     private DateTimeInterface $releaseDate;
 
     #[Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    // getter non utilisé, donc pas utile je demande à phpstan d'ignorer l'erreur
+    // @phpstan-ignore-next-line
     private DateTimeImmutable $updatedAt;
 
     #[Column(type: Types::TEXT, nullable: true)]
