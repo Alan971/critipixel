@@ -20,47 +20,46 @@ final class AddNoteTest extends FunctionalTestCase
     /**
      * ajout d'une note qui fonctionne
      *
-     * @return void
      */
-    // public function testAddNoteShouldSucceeded(): void
-    // {
-    //     $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+1@email.com']);
-    //     $this->login($user->getEmail());
+    public function testAddNoteShouldSucceeded(): void
+    {
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+1@email.com']);
+        $this->login($user->getEmail());
 
-    //     // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
-    //     $videoGame = $this->videoGameChoice($user);
-    //     $slug = $videoGame->getSlug();
-    //     if ($slug) {
-    //         $this->get('/' . $slug );
-    //     }
-    //     else {
-    //         throw new \Exception('No slug found, change user in the test code');
-    //     }
-    //     // ajout de notes de l'utilisateur
-    //     $this->client->submitForm('Poster', [
-    //         'review[rating]' => $rating= rand(1,5),
-    //         'review[comment]' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    //     ], 'POST');
-    //     $this->client->followRedirect();
-    //     self::assertResponseIsSuccessful();
+        // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
+        $videoGame = $this->videoGameChoice($user);
+        $slug = $videoGame->getSlug();
+        if ($slug) {
+            $this->get('/' . $slug );
+        }
+        else {
+            throw new \Exception('No slug found, change user in the test code');
+        }
+        // ajout de notes de l'utilisateur
+        $this->client->submitForm('Poster', [
+            'review[rating]' => $rating= rand(1,5),
+            'review[comment]' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        ], 'POST');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
         
-    //     // vérification de l'arrivée sur la nouvelle page 
-    //     $selector = 'div.list-group-item:last-child';
-    //     self::assertSelectorTextContains($selector .' h3', $user->getUsername());
-    //     self::assertSelectorTextContains($selector .' p', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
-    //     self::assertSelectorTextContains($selector .' span.value', (string)$rating);
+        // vérification de l'arrivée sur la nouvelle page 
+        $selector = 'div.list-group-item:last-child';
+        self::assertSelectorTextContains($selector .' h3', $user->getUsername());
+        self::assertSelectorTextContains($selector .' p', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+        self::assertSelectorTextContains($selector .' span.value', (string)$rating);
         
-    //     // vérification de l'enregistrement de la review
-    //     $lastReview = $this->getEntityManager()->getRepository(Review::class)->findOneBy([
-    //         'videoGame' => $videoGame,
-    //         'user' => $user
-    //     ]);
-    //     if (!$lastReview) {
-    //         throw new \Exception('No Review found while form was submitted');
-    //     }
-    //     self::assertSame($lastReview->getRating(), $rating, 'The rating is not the same');
+        // vérification de l'enregistrement de la review
+        $lastReview = $this->getEntityManager()->getRepository(Review::class)->findOneBy([
+            'videoGame' => $videoGame,
+            'user' => $user
+        ]);
+        if (!$lastReview) {
+            throw new \Exception('No Review found while form was submitted');
+        }
+        self::assertSame($lastReview->getRating(), $rating, 'The rating is not the same');
 
-    // } 
+    } 
 
     /**
      * @dataProvider provideInvalidFormData
@@ -72,38 +71,35 @@ final class AddNoteTest extends FunctionalTestCase
      * pour les tests sur le commentaires, on s'attend que le test soit passé avant le submit du formulaire
      * même s'il est vide ou trop long car il n'y a pas de limite de taille au commentaire
      */
-    // public function testAddNoteShouldFailed(array $formData): void
-    // {
-    //     // connexion de l'utilisateur
-    //     $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+7@email.com']);
-    //     $this->login($user->getEmail());  
+    public function testAddNoteShouldFailed(array $formData): void
+    {
+        // connexion de l'utilisateur
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+7@email.com']);
+        $this->login($user->getEmail());  
 
-    //     // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
-    //     $videoGame = $this->videoGameChoice($user);
-    //     $slug = $videoGame->getSlug();
-    //     if ($slug) {
-    //         $this->client->request('GET', '/' . $slug);
-    //     }
-    //     else {
-    //         throw new \Exception('No slug found, change user in the test code');
-    //     }
+        // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
+        $videoGame = $this->videoGameChoice($user);
+        $slug = $videoGame->getSlug();
+        if ($slug) {
+            $this->client->request('GET', '/' . $slug);
+        }
+        else {
+            throw new \Exception('No slug found, change user in the test code');
+        }
 
-    //     // ajout de note de l'utilisateur
-    //     $exceptionCaught = false;
-    //     $iscontains = false;
-    //     try {
-    //         $this->submit('Poster', $formData);
-    //     }
-    //     catch (\Exception $e) {
-    //         $exceptionCaught = true;
-    //         $exceptionType = get_class($e);
-    //         $iscontains = str_contains($exceptionType, 'InvalidArgumentException');
-    //         // Afficher le type de l'exception
-    //         echo "\n" .  'exception : ' . $exceptionType;
-    //     }
-    //     self::assertTrue($exceptionCaught);
-    //     self::assertTrue($iscontains);
-    // }
+        // ajout de note de l'utilisateur
+        $exceptionCaught = false;
+        $isContains = false;
+        try {
+            $this->submit('Poster', $formData);
+        }
+        catch (\Exception $e) {
+            $exceptionCaught = true;
+            $isContains = str_contains(get_class($e), 'InvalidArgumentException');
+        }
+        self::assertTrue($exceptionCaught);
+        self::assertTrue($isContains);
+    }
 
     public function testShouldFailedVideoGameAlreadyRated(): void
     {
