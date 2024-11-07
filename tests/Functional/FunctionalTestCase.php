@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 abstract class FunctionalTestCase extends WebTestCase
 {
@@ -28,7 +29,7 @@ abstract class FunctionalTestCase extends WebTestCase
     /**
      * @template T
      * @param class-string<T> $id
-     * @return T
+     * @template T
      */
     protected function service(string $id): object
     {
@@ -43,7 +44,14 @@ abstract class FunctionalTestCase extends WebTestCase
     protected function login(string $email = 'user+0@email.com'): void
     {
         $user = $this->service(EntityManagerInterface::class)->getRepository(User::class)->findOneByEmail($email);
-
         $this->client->loginUser($user);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    protected function submit(string $button, array $data = [], string $method = 'POST'): Crawler
+    {
+        return $this->client->submitForm($button, $data, $method);
     }
 }

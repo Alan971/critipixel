@@ -27,6 +27,7 @@ final class FilterTest extends FunctionalTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(1, 'article.game-card');
     }
+
     /**
      * @dataProvider provideMultipleFormData
      * 
@@ -34,7 +35,6 @@ final class FilterTest extends FunctionalTestCase
      */
     public function testShouldFilterVideoGamesByTag(array $formData): void
     {
-        $data = $this->getFormData();
         $this->get('/');
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(10, 'article.game-card');
@@ -48,7 +48,7 @@ final class FilterTest extends FunctionalTestCase
     /**
      * @dataProvider provideWrongFormData
      * 
-     * 
+     *
      */
     public function testShouldNotFilterVideoGamesByTag(array $formData): void
     {
@@ -56,15 +56,16 @@ final class FilterTest extends FunctionalTestCase
         $this->get('/');
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(10, 'article.game-card');
+        $exceptionCaught = false;
         try{
             $this->client->submitForm('Filtrer', [
                 'filter[tags]' => $formData['filter[tags]'],
             ], 'GET');
         }
         catch (\Exception $e) {
-            self::assertResponseStatusCodeSame(Response::HTTP_OK);
-            return;
-        }   
+            $exceptionCaught = true;
+        }
+        self::assertTrue($exceptionCaught);
     }
 
     public static function getFormData(array $overrideData = []): array

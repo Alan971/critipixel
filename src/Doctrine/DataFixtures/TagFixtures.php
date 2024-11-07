@@ -19,7 +19,7 @@ final class TagFixtures extends Fixture
         $tags = array_fill_callback(
             0,
             5,
-            fn (int $index): Tag => (new Tag)->setName(sprintf('Tag %d', $index))
+            fn (int $index): Tag => (new Tag)->setName(sprintf($this->faker->word . ' %d', $index))
         );
 
         array_walk($tags, [$manager, 'persist']);

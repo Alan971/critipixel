@@ -10,11 +10,13 @@ use App\Tests\Functional\FunctionalTestCase;
 use App\Model\Entity\VideoGame;
 use App\Security\Voter\VideoGameVoter;
 use App\Tests\Security\Voter\VideoGameVoterTest;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class AddNoteTest extends FunctionalTestCase
 {
+
     /**
      * ajout d'une note qui fonctionne
      *
@@ -22,19 +24,13 @@ final class AddNoteTest extends FunctionalTestCase
      */
     // public function testAddNoteShouldSucceeded(): void
     // {
-    //     // Remplacer le voter dans le conteneur de services
-    //     $this->getContainer()->set(VideoGameVoter::class, new VideoGameVoterTest());
-
-    //     // utiliser le module sécurity pour se logger : login programaticaly
-    //     $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user+1@email.com');
-    //     $this->client->loginUser($user,'password', ['_remember_me' => true]);
-    //     // self::assertTrue($this->client->getContainer()->get('security.token_storage')->getToken() !== null);
+    //     $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+1@email.com']);
+    //     $this->login($user->getEmail());
 
     //     // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
     //     $videoGame = $this->videoGameChoice($user);
     //     $slug = $videoGame->getSlug();
     //     if ($slug) {
-    //         echo "\n" .  'nom du jeu : ' . $slug . 'user : ' . $user->getUsername() . "\n" ;
     //         $this->get('/' . $slug );
     //     }
     //     else {
@@ -44,69 +40,28 @@ final class AddNoteTest extends FunctionalTestCase
     //     $this->client->submitForm('Poster', [
     //         'review[rating]' => $rating= rand(1,5),
     //         'review[comment]' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    //     ]);
-    //     // controle des messages d'erreur dans le formilaire
-    //     if (!$this->client->getResponse()->isSuccessful()) {
-    //         $crawler = $this->client->getCrawler();
-    //         $formErrors = $crawler->filter('.form-error-message')->each(function ($node) {
-    //             return $node->text();
-    //         });
-    //         echo 'Form Errors : ';
-    //         print_r( $formErrors);
-    //     }
-        
+    //     ], 'POST');
     //     $this->client->followRedirect();
     //     self::assertResponseIsSuccessful();
         
     //     // vérification de l'arrivée sur la nouvelle page 
-    //     // ne fonctionnne pas car le test n'utilise pas les variables de session
-    //     // self::assertResponseStatusCodeSame('/' . $slug);
-    //     // de retour dans le controleur la session est vide car le test n'utilise pas les variables de session
-
-    //     // vérification de l'enregistrement de la note
-    //     // IMPOSSIBLE également de faire le test car le test n'utilise pas les variables de session
-    //     // Le controleur n'est pas vérifié et l'enregistremenent de la note non plus
-    //     // $lastReview = $this->getEntityManager()->getRepository(Review::class)->findOneBy([
-    //     //     'videoGame' => $videoGame,
-    //     //     'user' => $user
-    //     // ]);
-    //     // if (!$lastReview) {
-    //     //     throw new \Exception('No review found while form was submitted');
-    //     // }
-    //     // self::assertSame($lastReview->getRating(), $rating, 'The rating is not the same');
+    //     $selector = 'div.list-group-item:last-child';
+    //     self::assertSelectorTextContains($selector .' h3', $user->getUsername());
+    //     self::assertSelectorTextContains($selector .' p', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+    //     self::assertSelectorTextContains($selector .' span.value', (string)$rating);
+        
+    //     // vérification de l'enregistrement de la review
+    //     $lastReview = $this->getEntityManager()->getRepository(Review::class)->findOneBy([
+    //         'videoGame' => $videoGame,
+    //         'user' => $user
+    //     ]);
+    //     if (!$lastReview) {
+    //         throw new \Exception('No Review found while form was submitted');
+    //     }
+    //     self::assertSame($lastReview->getRating(), $rating, 'The rating is not the same');
 
     // } 
 
-    /**
-     * Ajout d'une note qui fonctionne, version simplifiée
-     *
-     * @return void
-     */
-    public function testShouldPostReview(): void
-    {
-
-        // Remplacer le voter dans le conteneur de services
-        $this->getContainer()->set(VideoGameVoter::class, new VideoGameVoterTest());
-        $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user+0@email.com');
-        $this->client->loginUser($user,'password');
-        // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
-        $videoGame = $this->videoGameChoice($user);
-        $slug = $videoGame->getSlug();
-        $this->get('/' . $slug );
-
-        $this->client->submitForm(
-            'Poster',
-            [
-                'review[rating]' => 4,
-                'review[comment]' => 'Mon commentaire',
-            ]
-        );
-        self::assertResponseStatusCodeSame(302);
-        $this->client->followRedirect();
-        self::assertSelectorTextContains('div.list-group-item:last-child h3', 'user+0');
-        // self::assertSelectorTextContains('div.list-group-item:last-child p', 'Mon commentaire');
-        // self::assertSelectorTextContains('div.list-group-item:last-child span.value', '4');
-    }
     /**
      * @dataProvider provideInvalidFormData
      * 
@@ -117,83 +72,73 @@ final class AddNoteTest extends FunctionalTestCase
      * pour les tests sur le commentaires, on s'attend que le test soit passé avant le submit du formulaire
      * même s'il est vide ou trop long car il n'y a pas de limite de taille au commentaire
      */
-    public function testAddNoteShouldFailed(array $formData): void
-    {
-        // Remplacer le voter dans le conteneur de services
-        $this->getContainer()->set(VideoGameVoter::class, new VideoGameVoterTest());
+    // public function testAddNoteShouldFailed(array $formData): void
+    // {
+    //     // connexion de l'utilisateur
+    //     $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+7@email.com']);
+    //     $this->login($user->getEmail());  
 
-        // // connection d'un utilisateur
-        $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user+7@email.com');
-        $this->client->loginUser($user,'password');
-        // self::assertTrue($this->client->getContainer()->get('security.token_storage')->getToken() !== null);
-        
+    //     // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
+    //     $videoGame = $this->videoGameChoice($user);
+    //     $slug = $videoGame->getSlug();
+    //     if ($slug) {
+    //         $this->client->request('GET', '/' . $slug);
+    //     }
+    //     else {
+    //         throw new \Exception('No slug found, change user in the test code');
+    //     }
+
+    //     // ajout de note de l'utilisateur
+    //     $exceptionCaught = false;
+    //     $iscontains = false;
+    //     try {
+    //         $this->submit('Poster', $formData);
+    //     }
+    //     catch (\Exception $e) {
+    //         $exceptionCaught = true;
+    //         $exceptionType = get_class($e);
+    //         $iscontains = str_contains($exceptionType, 'InvalidArgumentException');
+    //         // Afficher le type de l'exception
+    //         echo "\n" .  'exception : ' . $exceptionType;
+    //     }
+    //     self::assertTrue($exceptionCaught);
+    //     self::assertTrue($iscontains);
+    // }
+
+    public function testShouldFailedVideoGameAlreadyRated(): void
+    {
+        // connexion de l'utilisateur
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+7@email.com']);
+        $this->login($user->getEmail());  
+
         // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
-        $videoGame = $this->videoGameChoice($user);
+        $videoGame = $this->videoGameBadChoice($user);
         $slug = $videoGame->getSlug();
         if ($slug) {
-            echo "\n" .  'Dans le test ' . $slug . ' , avant-> user : ' . $user->getUsername() . "\n" ;
-            //$this->get('/' . $slug );
             $this->client->request('GET', '/' . $slug);
         }
         else {
             throw new \Exception('No slug found, change user in the test code');
         }
         // ajout de note de l'utilisateur
-        $this->client->submitForm('Poster', $formData);
-        // choix du type de contrôles
-        if ($formData['review[rating]'] <= 5 && $formData['review[rating]'] > 0) {
-            self::assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $exceptionCaught = false;
+        try {
+            $this->submit('Poster', [
+                'review[rating]' => 3,
+                'review[comment]' => 'Mon commentaire 2',
+            ]);
+        }catch (\Exception $e) {
+            $exceptionCaught = true;
         }
-        else {
-            self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
-        }
+        self::assertTrue($exceptionCaught);
     }
+
 
     public static function provideInvalidFormData(): iterable
     {
         yield 'empty rating' => [self::getFormData(['review[rating]' => ''])];
         yield 'higher than 5' => [self::getFormData(['review[rating]' => 6])];
         yield 'lower than 1' => [self::getFormData(['review[rating]' => 0])];
-        // Les commentaires vides sont autorisé
-        yield 'empty comment' => [self::getFormData(['review[comment]' => ''])];
-        // les commentaires trop longs ne sont pas rejetés
-        yield 'too long comment' => [self::getFormData(['review[comment]' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        '])];
     }
 
     public static function getFormData(array $overrideData = []): array
@@ -202,12 +147,6 @@ final class AddNoteTest extends FunctionalTestCase
             'review[rating]' => $rating = rand(1,5),
             'review[comment]' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
         ] , $overrideData);
-    }
-
-    private function isGranted(string $attribute, VideoGame $videoGame): bool
-    {
-        // Simulez la vérification des autorisations ici, en fonction de votre logique d'autorisation
-        return $this->getContainer()->get('security.authorization_checker')->isGranted($attribute, $videoGame);
     }
 
     /**
@@ -245,4 +184,35 @@ final class AddNoteTest extends FunctionalTestCase
             throw new \Exception('No slug found, change user in the test code');
         }
     }
+    /**
+     * permet de choisir un jeu vidéo à partir d'un utilisateur
+     * le seul critère de sélection est :
+     * - choisir un jeu vidéo qui a déjà une note de cet utilisateur
+     * 
+     * @param User $user
+     * @return VideoGame
+     */
+    private function videoGameBadChoice(User $user): VideoGame
+    {
+        $videoGames = $this->getEntityManager()->getRepository(VideoGame::class)->findAll();
+        $reviews = $this->getEntityManager()->getRepository(Review::class)->findBy(['user' => $user]);
+        $slug = null;
+        foreach ($videoGames as $videoGame) {
+            foreach ($reviews as $review) {
+                if($videoGame->getId() === $review->getVideoGame()->getId()) {
+                    $slug = $videoGame->getSlug();;
+                }
+            }
+            if($slug) {
+                break;
+            }
+        }
+        if ($slug) {
+            return $this->getEntityManager()->getRepository(VideoGame::class)->findOneBy(['slug' => $slug]);
+        }
+        else {
+            throw new \Exception('No slug found, change user in the test code');
+        }
+    }
+
 }

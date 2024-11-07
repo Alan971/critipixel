@@ -17,7 +17,7 @@ final class RegisterTest extends FunctionalTestCase
         $this->client->submitForm('S\'inscrire', self::getFormData());
         self::assertResponseRedirects('/auth/login');
 
-        $user = $this->getEntityManager()->getRepository(User::class)->findOneByEmail('user@email.com');
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user@email.com']);
 
         $userPasswordHasher = $this->service(UserPasswordHasherInterface::class);
 
