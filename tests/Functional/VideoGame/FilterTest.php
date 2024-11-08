@@ -30,7 +30,7 @@ final class FilterTest extends FunctionalTestCase
 
     /**
      * @dataProvider provideMultipleFormData
-     * 
+     * @param array<string, mixed> $formData
      * 
      */
     public function testShouldFilterVideoGamesByTag(array $formData): void
@@ -47,7 +47,7 @@ final class FilterTest extends FunctionalTestCase
 
     /**
      * @dataProvider provideWrongFormData
-     * 
+     * @param array<string, mixed> $formData
      *
      */
     public function testShouldNotFilterVideoGamesByTag(array $formData): void
@@ -68,6 +68,12 @@ final class FilterTest extends FunctionalTestCase
         self::assertTrue($exceptionCaught);
     }
 
+    /**
+     * getFormData initialise les données de test
+     *
+     * @param array <string, mixed> $overrideData
+     * @return array <string, mixed>
+     */
     public static function getFormData(array $overrideData = []): array
     {
         return array_merge([
@@ -76,11 +82,22 @@ final class FilterTest extends FunctionalTestCase
         ] , $overrideData);
     }
 
+    /**
+     * funtion itérative qui retourne les données de test multiples
+     *
+     * @return iterable<array{0: array<string, mixed>}>
+     */
     public static function provideMultipleFormData(): iterable
     {
         yield 'only one tag' => [self::getFormData(['filter[tags]' => [1], 'expectedAnswer' => 10])];
         yield 'multiple tags' => [self::getFormData(['filter[tags]' => [1, 2], 'expectedAnswer' => 0])];
     }
+
+    /**
+     * funtion itérative qui retourne les données de test incorrectes
+     *
+     * @return iterable<array{0: array<string, mixed>}>
+     */ 
     public static function provideWrongFormData(): iterable
     {
         yield 'empty tag' => [self::getFormData(['filter[tags]' => ''])];

@@ -29,6 +29,7 @@ final class RegisterTest extends FunctionalTestCase
 
     /**
      * @dataProvider provideInvalidFormData
+     * @phpstan-param array<string, mixed> $formData
      */
     public function testThatRegistrationShouldFailed(array $formData): void
     {
@@ -39,6 +40,9 @@ final class RegisterTest extends FunctionalTestCase
         self::assertResponseIsUnprocessable();
     }
 
+    /**
+     * @phpstan-return iterable<array{0: array<string, mixed>}>
+     */
     public static function provideInvalidFormData(): iterable
     {
         yield 'empty username' => [self::getFormData(['register[username]' => ''])];
@@ -49,6 +53,12 @@ final class RegisterTest extends FunctionalTestCase
         yield 'invalid email' => [self::getFormData(['register[email]' => 'fail'])];
     }
 
+    /**
+     * getFormData initialise les données de test
+     *
+     * @param array <string, mixed> $overrideData
+     * @return array <string, mixed>
+     */
     public static function getFormData(array $overrideData = []): array
     {
         return array_merge([

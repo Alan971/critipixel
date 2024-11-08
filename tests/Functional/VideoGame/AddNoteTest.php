@@ -63,7 +63,7 @@ final class AddNoteTest extends FunctionalTestCase
 
     /**
      * @dataProvider provideInvalidFormData
-     * 
+     * @param array<string, mixed> $formData
      * 
      * On s'attend a ce que chaque test avec un rating inférieur à 1 ou supérieur à 5 ou null soit 
      * ne passe pas la validation du formulaire AVANT le submit du formulaire
@@ -129,7 +129,11 @@ final class AddNoteTest extends FunctionalTestCase
         self::assertTrue($exceptionCaught);
     }
 
-
+    /**
+     * fonction itérative qui retourne les données de test incorrectes
+     *
+     * @return iterable<array{0: array<string, mixed>}>
+     */
     public static function provideInvalidFormData(): iterable
     {
         yield 'empty rating' => [self::getFormData(['review[rating]' => ''])];
@@ -137,6 +141,12 @@ final class AddNoteTest extends FunctionalTestCase
         yield 'lower than 1' => [self::getFormData(['review[rating]' => 0])];
     }
 
+    /**
+     * getFormData initialise les données de test
+     *
+     * @param array <string, mixed> $overrideData
+     * @return array <string, mixed>
+     */
     public static function getFormData(array $overrideData = []): array
     {
         return array_merge([

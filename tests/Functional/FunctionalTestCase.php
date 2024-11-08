@@ -36,6 +36,13 @@ abstract class FunctionalTestCase extends WebTestCase
         return $this->client->getContainer()->get($id);
     }
 
+    /**
+     * fonction get qui permet de faire une requête GET
+     *
+     * @param string $uri
+     * @param array<string, mixed> $parameters
+     * @return Crawler
+     */
     protected function get(string $uri, array $parameters = []): Crawler
     {
         return $this->client->request('GET', $uri, $parameters);
