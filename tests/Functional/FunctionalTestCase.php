@@ -20,9 +20,14 @@ abstract class FunctionalTestCase extends WebTestCase
         parent::setUp();
         $this->client = static::createClient();
     }
-
+    /**
+     * @return EntityManagerInterface
+     */
     protected function getEntityManager(): EntityManagerInterface
     {
+        if(!$this->service(EntityManagerInterface::class) instanceof EntityManagerInterface){
+            throw new \Exception('class EntityManagerInterface attendue');
+        }
         return $this->service(EntityManagerInterface::class);
     }
 
@@ -50,7 +55,13 @@ abstract class FunctionalTestCase extends WebTestCase
 
     protected function login(string $email = 'user+0@email.com'): void
     {
-        $user = $this->service(EntityManagerInterface::class)->getRepository(User::class)->findOneByEmail($email);
+        $entityManager = $this->service(EntityManagerInterface::class);
+
+        // Vérification explicite du type
+        if (!$entityManager instanceof EntityManagerInterface) {
+        throw new \Exception('Le service retourné n\'est pas une instance d\'EntityManagerInterface.');
+        }
+        $user = $entityManager->getRepository(User::class)->findOneBy(['Email'=> $email]);
         $this->client->loginUser($user);
     }
 

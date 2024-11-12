@@ -31,6 +31,10 @@ final class VideoGameFixtures extends Fixture implements DependentFixtureInterfa
 
         $users = $manager->getRepository(User::class)->findAll();
 
+        if(!is_string($this->faker->paragraphs(10, true)) || !is_string($this->faker->paragraphs(6, true))){
+            throw new \Exception('Erreur de fixture');
+        }
+
         $videoGames = array_fill_callback(0, 50, fn (int $index): VideoGame => (new VideoGame)
             ->setTitle(sprintf('Jeu vidéo %d', $index))
             ->setDescription($this->faker->paragraphs(10, true))
@@ -53,6 +57,9 @@ final class VideoGameFixtures extends Fixture implements DependentFixtureInterfa
             shuffle($users);
 
             foreach (array_slice($users, 0, 5) as $user) {
+                if(!is_string($this->faker->paragraphs(1, true))){
+                    throw new \Exception('Erreur de fixture');
+                }
                 $review = (new Review())
                     ->setUser($user)
                     ->setVideoGame($videoGame)

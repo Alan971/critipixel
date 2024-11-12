@@ -19,6 +19,7 @@ final class RegisterTest extends FunctionalTestCase
 
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user@email.com']);
 
+         /** @var UserPasswordHasherInterface $userPasswordHasher */
         $userPasswordHasher = $this->service(UserPasswordHasherInterface::class);
 
         self::assertNotNull($user);

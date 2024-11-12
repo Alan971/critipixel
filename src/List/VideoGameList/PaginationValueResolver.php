@@ -29,6 +29,9 @@ final readonly class PaginationValueResolver implements ValueResolverInterface
             return [];
         }
 
+        if (!is_string($request->query->get('sorting','')) || !is_string($request->query->get('direction', ''))) {
+            throw new \Exception('Erreur de pagination');
+        }
         return [new Pagination(
             $request->query->getInt('page', 1),
             $request->query->getInt('limit', 10),

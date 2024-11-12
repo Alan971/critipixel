@@ -16,7 +16,7 @@ final class LoginTest extends FunctionalTestCase
             'email' => 'user+0@email.com',
             'password' => 'password'
         ]);
-
+        /** @var AuthorizationCheckerInterface $authorizationChecker */
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
 
         self::assertTrue($authorizationChecker->isGranted('IS_AUTHENTICATED'));
@@ -33,7 +33,7 @@ final class LoginTest extends FunctionalTestCase
             'email' => 'user+1@email.com',
             'password' => 'fail'
         ]);
-
+        /** @var AuthorizationCheckerInterface $authorizationChecker */
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
 
         self::assertFalse($authorizationChecker->isGranted('IS_AUTHENTICATED'));
