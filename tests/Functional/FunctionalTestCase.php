@@ -59,10 +59,12 @@ abstract class FunctionalTestCase extends WebTestCase
 
         // Vérification explicite du type
         if (!$entityManager instanceof EntityManagerInterface) {
-        throw new \Exception('Le service retourné n\'est pas une instance d\'EntityManagerInterface.');
+            throw new \Exception('Le service retourné n\'est pas une instance d\'EntityManagerInterface.');
         }
         $user = $entityManager->getRepository(User::class)->findOneBy(['Email'=> $email]);
-        $this->client->loginUser($user);
+        if($user !== null){
+            $this->client->loginUser($user);
+        }
     }
 
     /**

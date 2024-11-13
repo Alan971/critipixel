@@ -24,8 +24,11 @@ final class AddNoteTest extends FunctionalTestCase
     public function testAddNoteShouldSucceeded(): void
     {
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+1@email.com']);
-        $this->login($user->getEmail());
-
+        if ($user === null) {
+            throw new \Exception('No user found, change user in the test code');
+        }
+        $this->login($user->getEmail());    
+        
         // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
         $videoGame = $this->videoGameChoice($user);
         $slug = $videoGame->getSlug();
@@ -75,6 +78,9 @@ final class AddNoteTest extends FunctionalTestCase
     {
         // connexion de l'utilisateur
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+7@email.com']);
+        if ($user === null) {
+            throw new \Exception('No user found, change user in the test code');
+        }
         $this->login($user->getEmail());  
 
         // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
@@ -105,6 +111,9 @@ final class AddNoteTest extends FunctionalTestCase
     {
         // connexion de l'utilisateur
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user+7@email.com']);
+        if ($user === null) {
+            throw new \Exception('No user found, change user in the test code');
+        }
         $this->login($user->getEmail());  
 
         // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
@@ -184,7 +193,11 @@ final class AddNoteTest extends FunctionalTestCase
             }
         }
         if ($slug) {
-            return $this->getEntityManager()->getRepository(VideoGame::class)->findOneBy(['slug' => $slug]);
+            $videoGame = $this->getEntityManager()->getRepository(VideoGame::class)->findOneBy(['slug' => $slug]);
+            if ($videoGame === null) {
+                throw new \Exception('No video game found, change user in the test code');
+            }
+            return $videoGame;
         }
         else {
             throw new \Exception('No slug found, change user in the test code');
@@ -214,7 +227,11 @@ final class AddNoteTest extends FunctionalTestCase
             }
         }
         if ($slug) {
-            return $this->getEntityManager()->getRepository(VideoGame::class)->findOneBy(['slug' => $slug]);
+            $videoGame = $this->getEntityManager()->getRepository(VideoGame::class)->findOneBy(['slug' => $slug]);
+            if ($videoGame === null) {
+                throw new \Exception('No video game found, change user in the test code');
+            }
+            return $videoGame;
         }
         else {
             throw new \Exception('No slug found, change user in the test code');

@@ -50,7 +50,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[NotBlank]
     #[NotCompromisedPassword]
     #[PasswordStrength]
-    private ?string $plainPassword = null;
+    private string $plainPassword;
 
     public function getId(): ?int
     {
@@ -90,12 +90,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPlainPassword(): ?string
+    public function getPlainPassword(): string
     {
         return $this->plainPassword;
     }
 
-    public function setPlainPassword(?string $plainPassword): User
+    public function setPlainPassword(string $plainPassword): User
     {
         $this->plainPassword = $plainPassword;
         return $this;
@@ -108,7 +108,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-        $this->plainPassword = null;
+        $this->plainPassword = "";
     }
 
     public function getUserIdentifier(): string

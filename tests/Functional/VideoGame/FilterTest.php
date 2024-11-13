@@ -42,7 +42,12 @@ final class FilterTest extends FunctionalTestCase
             'filter[tags]' => $formData['filter[tags]'],
         ], 'GET');
         self::assertResponseIsSuccessful();
-        self::assertSelectorCount($formData['expectedAnswer'], 'article.game-card');
+        if (is_int($formData['expectedAnswer'])) {
+            self::assertSelectorCount($formData['expectedAnswer'], 'article.game-card');
+        }
+        else {
+            self::assertTrue(false);
+        }
     }
 
     /**
