@@ -155,12 +155,19 @@ final class VideoGamesList implements Countable, IteratorAggregate
     {
         // return count($this->data->getIterator());
         $value = $this->data->getIterator();
-        if ($value instanceof \Countable) {
-            return count($value);  // Si c'est Countable
-        } else {
-            return iterator_count($value);  // Si c'est Traversable mais pas Countable
-        }
-        
+        // if ($value instanceof \Countable) {
+        //     return count($value);  // Si c'est Countable
+        // } else {
+        //     return iterator_count($value);  // Si c'est Traversable mais pas Countable
+        // } 
+            // Si l'objet est un Traversable mais pas un Countable, on le transforme en tableau
+        if ($value instanceof \Traversable && !$value instanceof \Countable) {
+            // Convertir le Traversable en un tableau
+            $value = iterator_to_array($value);
+    }
+
+    // Si c'est un Countable (ou après transformation en tableau), on retourne le count
+    return count($value);
     }
 
     public function generateUrl(int $page): string

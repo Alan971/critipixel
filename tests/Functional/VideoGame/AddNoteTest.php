@@ -29,6 +29,7 @@ final class AddNoteTest extends FunctionalTestCase
         }
         $this->login($user->getEmail());    
         
+        
         // choix d'un jeu vidéo que l'utilisateur n'a pas encore noté
         $videoGame = $this->videoGameChoice($user);
         $slug = $videoGame->getSlug();
@@ -40,7 +41,7 @@ final class AddNoteTest extends FunctionalTestCase
         }
         // ajout de notes de l'utilisateur
         $this->client->submitForm('Poster', [
-            'review[rating]' => $rating= rand(1,5),
+            'review[rating]' => $rating = rand(1,5),
             'review[comment]' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         ], 'POST');
         $this->client->followRedirect();
@@ -61,6 +62,9 @@ final class AddNoteTest extends FunctionalTestCase
             throw new \Exception('No Review found while form was submitted');
         }
         self::assertSame($lastReview->getRating(), $rating, 'The rating is not the same');
+        //suppression de la note
+        $this->getEntityManager()->remove($lastReview);
+        $this->getEntityManager()->flush();
 
     } 
 

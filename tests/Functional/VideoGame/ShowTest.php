@@ -15,4 +15,22 @@ final class ShowTest extends FunctionalTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Jeu vidéo 0');
     }
+
+    /**
+     * teste la pagination
+     *
+     * @return void
+     */
+    public function testShouldShowNextPage(): void
+    {
+        $this->get('/');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('.pagination .page-item.active .page-link', '1');
+        self::assertSelectorTextContains('.pagination .page-item:nth-child(5) .page-link', 'Suivant');
+
+        $this->get('/?page=2');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.pagination .page-item.active .page-link', '2');
+        self::assertSelectorTextContains('.pagination .page-item:nth-child(2) .page-link', 'Précédent');
+    }
 }

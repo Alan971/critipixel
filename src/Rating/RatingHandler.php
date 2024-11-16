@@ -15,14 +15,12 @@ final readonly class RatingHandler implements CalculateAverageRating, CountRatin
             $videoGame->setAverageRating(null);
             return;
         }
-
         $ratingsSum = array_sum(
             array_map(
                 static fn (Review $review): int => $review->getRating(),
                 $videoGame->getReviews()->toArray()
             )
         );
-
         $videoGame->setAverageRating((int) ceil($ratingsSum/ count($videoGame->getReviews())));
     }
 
