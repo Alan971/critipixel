@@ -17,14 +17,43 @@ permissions:
 jobs:
   symfony-tests:
     runs-on: ubuntu-latest
+
+    env:
+      DB_PWD: ${{ secrets.DB_PWD }}
+    services:
+      postgres:
+        image: postgres:16-alpine
+        options: --health-cmd='pg_isready -U postgres' --health-timeout=5s --health-retries=5
+        ports:
+          - 5432:5432  # Expose le port 5432 pour que le service soit accessible
+        env:
+          POSTGRES_USER: postgres  # Le nom d'utilisateur pour se connecter à PostgreSQL
+          POSTGRES_PASSWORD: DB_PWD  # Le mot de passe de l'utilisateur
+          POSTGRES_DB: postgres  # Le nom de la base de données à créer
     steps:
-    #  To automatically get bug fixes and new Php versions for shivammathur/setup-php,
-    # change this to (see https://github.com/shivammathur/setup-php#bookmark-versioning):
+    - name: setup github Action
+      uses: actions/checkout@v4
+
     # uses: shivammathur/setup-php@v2
-    - uses: shivammathur/setup-php@2cb9b829437ee246e9b3cac53555a39208ca6d28
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       with:
         php-version: '8.0'
-    - uses: actions/checkout@v4
+        extensions: mbstring, intl, pdo_pgsql, pdo, pgsql, zip, gd, dom, fileinfo, curl, iconv, imagick, bcmath, soap, opcache
+      env: 
+        update: true
+
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+    - name: Set up environment variables
+      run: echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> $GITHUB_ENV
     - name: Copy .env.test.local
       run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
     - name: Cache Composer packages
@@ -35,13 +64,6 @@ jobs:
         key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
           ${{ runner.os }}-php-
-    - name: Install Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-    - name: Create Database
-      run: |
-        mkdir -p data
-        touch data/database.sqlite
+
     - name: Execute tests (Unit and Feature tests) via PHPUnit
-      env:
-        DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
       run: vendor/bin/phpunit
