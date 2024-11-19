@@ -34,16 +34,6 @@ jobs:
     - name: setup github Action
       uses: actions/checkout@v4
 
-    - name: View PostgreSQL logs
-      run: |
-        docker ps -a
-        CONTAINER_ID=$(docker ps -aq --filter ancestor=postgres:latest)
-          if [ -z "$CONTAINER_ID" ]; then
-            echo "Le conteneur $CONTAINER_ID n'est pas en cours d'exécution."
-            exit 1
-          fi
-          docker exec $CONTAINER_ID psql -U postgres -d postgres -c '\l' | grep critipixel
-
     # uses: shivammathur/setup-php@v2
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -54,7 +44,7 @@ jobs:
         update: true
 
     - name: Install Composer
-      run: composer install
+      run: composer install --no-progress
 
     - name: Set up environment variables
       run: echo "postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8" >> $GITHUB_ENV
@@ -98,21 +88,6 @@ jobs:
       
     - name: Install fixture
       run: php bin/console doctrine:fixtures:load --env=test --no-interaction
-
-    - name : does bdd exist ?
-      run: |
-        DB_NAMES=("critipixel" "critipixel_test")
-        for DB_NAME in "${DB_NAMES[@]}"; do
-          PGPASSWORD=${{ env.DB_PWD }} psql -h localhost -p 5432 -U postgres -t -c "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1
-          if [[ $? -eq 0 ]]; then
-            echo "Database $DB_NAME exists"
-          else
-            echo "Database $DB_NAME does not exist"
-            exit 1
-          fi
-        done
-    - name: about
-      run: php bin/console about
 
     - name : install asset et compile
       run: |
