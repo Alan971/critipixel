@@ -21,6 +21,7 @@ jobs:
     env:
       # DB_PWD: ${{ secrets.MOTDEPASSE }}
       DB_PWD: password
+      DATABASE_URL: "postgresql://postgres:${DB_PWD}@localhost:5432/criti-pixel_test?serverVersion=13&charset=utf8"
     services:
       postgres:
         image: postgres:latest
