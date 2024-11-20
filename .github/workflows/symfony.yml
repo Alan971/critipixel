@@ -51,10 +51,15 @@ jobs:
         php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
         echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" >> .env.test.local
         cat .env.test.local
+
     - name: Copy .env.local
       run: |
         echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" >> .env.local
         cat .env.local 
+    - name: modify .env.test
+      run: |
+        echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" > .env.test
+        cat .env.test
     - name: Wait for PostgreSQL to be ready
       run: |
         max_retries=20
