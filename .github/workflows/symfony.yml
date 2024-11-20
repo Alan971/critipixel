@@ -43,9 +43,6 @@ jobs:
       env: 
         update: true
 
-    - name: Install Composer
-      run: composer install --no-progress
-
     - name: Set up environment variables
       run: echo "postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8" >> $GITHUB_ENV
 
@@ -71,7 +68,10 @@ jobs:
           echo "Waiting for PostgreSQL... (Attempt $retries of $max_retries)"
           sleep 2
         done
-        
+    
+    - name: Install Composer
+      run: composer install --no-progress
+      
     - name: Cache Composer packages
       id: composer-cache
       uses: actions/cache@v3
