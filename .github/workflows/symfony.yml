@@ -99,9 +99,11 @@ jobs:
       run: |
         php bin/console importmap:install
         php bin/console asset-map:compile
+
+    - name: controle statique avec phpstan
+      run: vendor/bin/phpstan analyse src --error-format=github
       
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       run: vendor/bin/phpunit
 
-    - name: controle statique avec phpstan
-      run: vendor/bin/phpstan analyse src --error-format=github
+
