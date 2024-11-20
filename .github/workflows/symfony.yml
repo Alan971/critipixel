@@ -20,6 +20,7 @@ jobs:
     
     env:
       # DB_PWD: ${{ secrets.MOTDEPASSE }}
+      # DATABASE_URL: "postgresql://postgres:${{ secrets.MOTDEPASSE }}@localhost:5432/criti-pixel_test?serverVersion=13&charset=utf8"
       DB_PWD: password
       DATABASE_URL: "postgresql://postgres:password@localhost:5432/criti-pixel_test?serverVersion=13&charset=utf8"
     services:
@@ -34,16 +35,6 @@ jobs:
     steps:
     - name: setup github Action
       uses: actions/checkout@v4
-
-    - name: View PostgreSQL logs
-      run: |
-        docker ps -a
-        CONTAINER_ID=$(docker ps -aq --filter ancestor=postgres:latest)
-          if [ -z "$CONTAINER_ID" ]; then
-            echo "Le conteneur $CONTAINER_ID n'est pas en cours d'exécution."
-            exit 1
-          fi
-          docker exec $CONTAINER_ID psql -U postgres -d postgres -c '\l' | grep critipixel
 
     # uses: shivammathur/setup-php@v2
     - name: Setup PHP
@@ -69,18 +60,7 @@ jobs:
           
           echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" >> .env.test.local
           cat .env.test.local
-      # run: |
-      #   php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
-
-    # - name: Copy .env.local
-    #   run: |
-    #     echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" >> .env.local
-    #     cat .env.local 
-    # - name: modify .env.test
-    #   run: |
-    #     echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" > .env.test
-    #     cat .env.test
     - name: Wait for PostgreSQL to be ready
       run: |
         max_retries=20
