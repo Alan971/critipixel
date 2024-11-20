@@ -17,45 +17,71 @@ permissions:
 jobs:
   symfony-tests:
     runs-on: ubuntu-latest
-
+    
     env:
-      DB_PWD: ${{ secrets.DB_PWD }}
+      # DB_PWD: ${{ secrets.MOTDEPASSE }}
+      DB_PWD: password
     services:
       postgres:
-        image: postgres:16-alpine
-        options: --health-cmd='pg_isready -U postgres' --health-timeout=5s --health-retries=5
+        image: postgres:latest
         ports:
           - 5432:5432  # Expose le port 5432 pour que le service soit accessible
         env:
           POSTGRES_USER: postgres  # Le nom d'utilisateur pour se connecter à PostgreSQL
-          POSTGRES_PASSWORD: DB_PWD  # Le mot de passe de l'utilisateur
-          POSTGRES_DB: postgres  # Le nom de la base de données à créer
+          POSTGRES_PASSWORD: ${{ env.DB_PWD }}  # Le mot de passe de l'utilisateur
+          POSTGRES_DB: critipixel  # Le nom de la base de données à créer
     steps:
     - name: setup github Action
       uses: actions/checkout@v4
+
+    - name: View PostgreSQL logs
+      run: |
+        docker ps -a
+        CONTAINER_ID=$(docker ps -aq --filter ancestor=postgres:latest)
+          if [ -z "$CONTAINER_ID" ]; then
+            echo "Le conteneur $CONTAINER_ID n'est pas en cours d'exécution."
+            exit 1
+          fi
+          docker exec $CONTAINER_ID psql -U postgres -d postgres -c '\l' | grep critipixel
 
     # uses: shivammathur/setup-php@v2
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: '8.3'
         extensions: mbstring, intl, pdo_pgsql, pdo, pgsql, zip, gd, dom, fileinfo, curl, iconv, imagick, bcmath, soap, opcache
       env: 
         update: true
 
-    - name: Install Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: Install Composer
+      run: composer install
 
+    - name: Set up environment variables
+      run: echo "postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8" >> $GITHUB_ENV
+
+    - name: Copy .env.test.local
+      run: |
+        php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+        echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" >> .env.test.local
+        cat .env.test.local
+    - name: Copy .env.local
+      run: |
+        echo "DATABASE_URL=\"postgresql://postgres:${DB_PWD}@localhost:5432/critipixel?serverVersion=16&charset=utf8\"" >> .env.local
+        cat .env.local 
     - name: Wait for PostgreSQL to be ready
       run: |
-        until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
-          echo "Waiting for PostgreSQL..."
-          sleep 1
+        max_retries=20
+        retries=0
+        until pg_isready -h localhost -p 5432 -U postgres; do
+          retries=$((retries+1))
+          if [ $retries -ge $max_retries ]; then
+            echo "PostgreSQL is not ready after $max_retries attempts."
+            exit 1
+          fi
+          echo "Waiting for PostgreSQL... (Attempt $retries of $max_retries)"
+          sleep 2
         done
-    - name: Set up environment variables
-      run: echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> $GITHUB_ENV
-    - name: Copy .env.test.local
-      run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+        
     - name: Cache Composer packages
       id: composer-cache
       uses: actions/cache@v3
@@ -64,6 +90,34 @@ jobs:
         key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
           ${{ runner.os }}-php-
+          
+    - name: Create database et migration
+      run: |
+        php bin/console doctrine:database:create --env=test --if-not-exists 
+        php bin/console doctrine:migration:migrate --env=test --no-interaction
+      
+    - name: Install fixture
+      run: php bin/console doctrine:fixtures:load --env=test --no-interaction
 
+    - name : does bdd exist ?
+      run: |
+        DB_NAMES=("critipixel" "critipixel_test")
+        for DB_NAME in "${DB_NAMES[@]}"; do
+          PGPASSWORD=${{ env.DB_PWD }} psql -h localhost -p 5432 -U postgres -t -c "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1
+          if [[ $? -eq 0 ]]; then
+            echo "Database $DB_NAME exists"
+          else
+            echo "Database $DB_NAME does not exist"
+            exit 1
+          fi
+        done
+    - name: about
+      run: php bin/console about
+
+    - name : install asset et compile
+      run: |
+        php bin/console importmap:install
+        php bin/console asset-map:compile
+      
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       run: vendor/bin/phpunit

@@ -14,18 +14,19 @@ final class RegisterTest extends FunctionalTestCase
     {
         $this->get('/auth/register');
 
-        $this->client->submitForm('S\'inscrire', self::getFormData());
+        $dataUser = self::getFormData();
+        $this->client->submitForm('S\'inscrire', $dataUser);
         self::assertResponseRedirects('/auth/login');
 
-        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => 'user@email.com']);
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => $dataUser['register[email]']]);
 
          /** @var UserPasswordHasherInterface $userPasswordHasher */
         $userPasswordHasher = $this->service(UserPasswordHasherInterface::class);
 
         self::assertNotNull($user);
-        self::assertSame('username', $user->getUsername());
-        self::assertSame('user@email.com', $user->getEmail());
-        self::assertTrue($userPasswordHasher->isPasswordValid($user, 'SuperPassword123!'));
+        self::assertSame($dataUser['register[username]'], $user->getUsername());
+        self::assertSame($dataUser['register[email]'], $user->getEmail());
+        self::assertTrue($userPasswordHasher->isPasswordValid($user, $dataUser['register[plainPassword]']));
     }
 
     /**
