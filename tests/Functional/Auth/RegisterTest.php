@@ -26,7 +26,11 @@ final class RegisterTest extends FunctionalTestCase
         self::assertNotNull($user);
         self::assertSame($dataUser['register[username]'], $user->getUsername());
         self::assertSame($dataUser['register[email]'], $user->getEmail());
-        self::assertTrue($userPasswordHasher->isPasswordValid($user, $dataUser['register[plainPassword]']));
+        $plainPassword = $dataUser['register[plainPassword]'] ?? '';
+        if (!is_string($plainPassword)) {
+            throw new \InvalidArgumentException('Le mot de passe doit être une chaîne de caractères.');
+        }
+        self::assertTrue($userPasswordHasher->isPasswordValid($user, $plainPassword));
     }
 
     /**
